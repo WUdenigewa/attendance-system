@@ -2,34 +2,42 @@ package com.example.attendance.controller;
 
 import com.example.attendance.common.Result;
 import com.example.attendance.entity.Student;
-import com.example.attendance.entity.Attendance;
+import com.example.attendance.service.StudentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
-import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 public class StudentController {
 
-    private static Map<String, Student> studentDB = new HashMap<>();
+    @Autowired
+    private StudentService studentService;  // 注入 Service 层
 
-    static {
-        studentDB.put("2024001", new Student("2024001", "张三", "软件工程", "软件1班", "13800138001", "zhangsan@example.com"));
-        studentDB.put("2024002", new Student("2024002", "李四", "软件工程", "软件1班", "13800138002", "lisi@example.com"));
-        studentDB.put("2024003", new Student("2024003", "王五", "软件工程", "软件2班", "13800138003", "wangwu@example.com"));
-        studentDB.put("2024004", new Student("2024004", "赵六", "软件工程", "软件2班", "13800138004", "zhaoliu@example.com"));
-        studentDB.put("2024005", new Student("2024005", "孙七", "软件工程", "软件1班", "13800138005", "sunqi@example.com"));
-        studentDB.put("2024006", new Student("2024006", "周八", "软件工程", "软件2班", "13800138006", "zhouba@example.com"));
-        studentDB.put("2024007", new Student("2024007", "吴九", "软件工程", "软件1班", "13800138007", "wujiu@example.com"));
-        studentDB.put("2024008", new Student("2024008", "郑十", "软件工程", "软件2班", "13800138008", "zhengshi@example.com"));
+    // ========== 学生管理接口 ==========
+
+    /**
+     * 新增学生
+     * POST /student/add
+     */
+    @PostMapping("/student/add")
+    public Result<String> addStudent(@RequestBody Student student) {
+        boolean success = studentService.addStudent(student);
+        if (success) {
+            return Result.success("学生添加成功：" + student.getName());
+        } else {
+            return Result.error("学生添加失败，请检查学号格式或是否重复");
+        }
     }
 
-    // 任务一：学生信息查询接口（路径参数）
+    /**
+     * 根据学号查询学生
+     * GET /student/info/{studentId}
+     */
     @GetMapping("/student/info/{studentId}")
     public Result<Student> getStudentInfo(@PathVariable String studentId) {
-        Student student = studentDB.get(studentId);
+        Student student = studentService.getStudentByStudentId(studentId);
         if (student != null) {
             return Result.success(student);
         } else {
@@ -37,78 +45,117 @@ public class StudentController {
         }
     }
 
-    // 任务二：学生列表查询接口（查询参数）
-    @RequestMapping("/student/list")
+    /**
+     * 查询所有学生
+     * GET /student/list/all
+     */
+    @GetMapping("/student/list/all")
+    public Result<List<Student>> getAllStudents() {
+        List<Student> students = studentService.getAllStudents();
+        return Result.success(students);
+    }
+
+    /**
+     * 按班级查询学生
+     * GET /student/list/byClass?className=软件1班
+     */
+    @GetMapping("/student/list/byClass")
+    public Result<List<Student>> getStudentsByClass(@RequestParam String className) {
+        List<Student> students = studentService.getStudentsByClassName(className);
+        return Result.success(students);
+    }
+
+    /**
+     * 学生列表查询接口（带分页和班级过滤）
+     * GET /student/list?className=软件1班&page=1
+     */
+    @GetMapping("/student/list")
     public Result<List<Student>> getStudentList(
             @RequestParam(required = false) String className,
-            @RequestParam(defaultValue = "1") int page
-    ) {
-        List<Student> allStudents = new ArrayList<>(studentDB.values());
-        List<Student> filteredStudents = new ArrayList<>();
+            @RequestParam(defaultValue = "1") int page) {
 
+        List<Student> allStudents;
         if (className != null && !className.isEmpty()) {
-            for (Student student : allStudents) {
-                if (className.equals(student.getClassName())) {
-                    filteredStudents.add(student);
-                }
-            }
+            allStudents = studentService.getStudentsByClassName(className);
         } else {
-            filteredStudents = allStudents;
+            allStudents = studentService.getAllStudents();
         }
 
+        // 分页处理
         int pageSize = 3;
         int start = (page - 1) * pageSize;
-        int end = Math.min(start + pageSize, filteredStudents.size());
+        int end = Math.min(start + pageSize, allStudents.size());
 
-        if (start >= filteredStudents.size()) {
-            return Result.success(new ArrayList<>());
+        if (start >= allStudents.size()) {
+            return Result.success(List.of());
         }
 
-        List<Student> pageResult = filteredStudents.subList(start, end);
+        List<Student> pageResult = allStudents.subList(start, end);
         return Result.success(pageResult);
     }
 
-    // 任务三：考勤记录更新接口（JSON体参数）
-    @PostMapping("/attendance/update")
-    public Result<String> updateAttendance(@RequestBody Attendance attendance) {
-        // 打印接收到的数据
-        System.out.println("========== 收到考勤更新请求 ==========");
-        System.out.println("学号：" + attendance.getStudentId());
-        System.out.println("姓名：" + attendance.getStudentName());
-        System.out.println("状态：" + attendance.getStatus());
-        System.out.println("课程：" + attendance.getCourseName());
-        System.out.println("签到时间：" + attendance.getCheckInTime());
-        System.out.println("备注：" + attendance.getRemark());
-        System.out.println("=====================================");
-
-        // 验证必要字段
-        if (attendance.getStudentId() == null || attendance.getStudentId().isEmpty()) {
-            return Result.error("学号不能为空");
+    /**
+     * 更新学生信息
+     * PUT /student/update
+     */
+    @PutMapping("/student/update")
+    public Result<String> updateStudent(@RequestBody Student student) {
+        boolean success = studentService.updateStudent(student);
+        if (success) {
+            return Result.success("学生信息更新成功：" + student.getName());
+        } else {
+            return Result.error("学生信息更新失败，请检查学号是否存在");
         }
-        if (attendance.getStatus() == null || attendance.getStatus().isEmpty()) {
-            return Result.error("考勤状态不能为空");
-        }
-
-        // 在实际项目中，这里会保存到数据库
-        // 我们模拟保存成功
-
-        String successMessage = String.format(
-                "学生 %s(%s) 的考勤记录更新成功，状态：%s",
-                attendance.getStudentName(),
-                attendance.getStudentId(),
-                attendance.getStatus()
-        );
-
-        return Result.success(successMessage);
     }
 
-    // 之前的/about接口
+    /**
+     * 删除学生
+     * DELETE /student/delete/{studentId}
+     */
+    @DeleteMapping("/student/delete/{studentId}")
+    public Result<String> deleteStudent(@PathVariable String studentId) {
+        boolean success = studentService.deleteStudent(studentId);
+        if (success) {
+            return Result.success("学生删除成功：" + studentId);
+        } else {
+            return Result.error("学生删除失败，请检查学号是否存在");
+        }
+    }
+
+    /**
+     * 考勤记录更新接口（JSON体参数）
+     * POST /attendance/update
+     */
+    @PostMapping("/attendance/update")
+    public Result<String> updateAttendance(@RequestBody Map<String, String> attendance) {
+        System.out.println("收到考勤更新请求：" + attendance);
+        String studentId = attendance.get("studentId");
+        String status = attendance.get("status");
+
+        if (studentId == null || status == null) {
+            return Result.error("学号和考勤状态不能为空");
+        }
+
+        // 验证学生是否存在
+        Student student = studentService.getStudentByStudentId(studentId);
+        if (student == null) {
+            return Result.error("学号为 " + studentId + " 的学生不存在");
+        }
+
+        String message = String.format("学生 %s(%s) 的考勤记录更新成功，状态：%s",
+                student.getName(), studentId, status);
+        return Result.success(message);
+    }
+
+    /**
+     * 之前的/about接口
+     */
     @GetMapping("/about")
     public Map<String, String> getAboutInfo() {
         Map<String, String> info = new HashMap<>();
-        info.put("name", "张三");
+        info.put("name", "吾德尼格瓦");
         info.put("major", "软件工程");
-        info.put("studentId", "2024001");
+        info.put("studentId", "20240001");
         return info;
     }
 }

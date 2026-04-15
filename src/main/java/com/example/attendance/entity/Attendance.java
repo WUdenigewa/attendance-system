@@ -1,75 +1,139 @@
 package com.example.attendance.entity;
 
+import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "attendance")
 public class Attendance {
-    private String studentId;      // 学号
-    private String studentName;    // 学生姓名
-    private String status;         // 考勤状态：正常/迟到/早退/旷课/请假
-    private String courseName;     // 课程名称
-    private LocalDateTime checkInTime;  // 签到时间
-    private String remark;         // 备注
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "student_id", nullable = false, length = 20)
+    private String studentId;
+
+    @Column(name = "student_name", nullable = false, length = 50)
+    private String studentName;
+
+    @Column(name = "course_id", nullable = false)
+    private Long courseId;
+
+    @Column(name = "course_name", nullable = false, length = 100)
+    private String courseName;
+
+    @Column(name = "attendance_date", nullable = false)
+    private LocalDate attendanceDate;
+
+    @Column(name = "status", nullable = false, length = 20)
+    private String status;
+
+    @Column(name = "check_in_time")
+    private LocalDateTime checkInTime;
+
+    @Column(name = "check_out_time")
+    private LocalDateTime checkOutTime;
+
+    @Column(name = "seat_number", length = 20)
+    private String seatNumber;
+
+    @Column(name = "seat_row")
+    private Integer seatRow;
+
+    @Column(name = "seat_col")
+    private Integer seatCol;
+
+    @Column(name = "remark", length = 500)
+    private String remark;
+
+    @Column(name = "create_time", updatable = false)
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time")
+    private LocalDateTime updateTime;
 
     // 无参构造函数
     public Attendance() {}
 
-    // 有参构造函数
-    public Attendance(String studentId, String studentName, String status,
-                      String courseName, LocalDateTime checkInTime, String remark) {
+    // 有参构造函数（简化版）
+    public Attendance(String studentId, String studentName, Long courseId, String courseName,
+                      LocalDate attendanceDate, String status) {
         this.studentId = studentId;
         this.studentName = studentName;
-        this.status = status;
+        this.courseId = courseId;
         this.courseName = courseName;
-        this.checkInTime = checkInTime;
-        this.remark = remark;
-    }
-
-    // Getter 和 Setter 方法
-    public String getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
-    }
-
-    public String getStudentName() {
-        return studentName;
-    }
-
-    public void setStudentName(String studentName) {
-        this.studentName = studentName;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
+        this.attendanceDate = attendanceDate;
         this.status = status;
     }
 
-    public String getCourseName() {
-        return courseName;
+    @PrePersist
+    protected void onCreate() {
+        createTime = LocalDateTime.now();
+        updateTime = LocalDateTime.now();
     }
 
-    public void setCourseName(String courseName) {
-        this.courseName = courseName;
+    @PreUpdate
+    protected void onUpdate() {
+        updateTime = LocalDateTime.now();
     }
 
-    public LocalDateTime getCheckInTime() {
-        return checkInTime;
-    }
+    // Getter 和 Setter
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setCheckInTime(LocalDateTime checkInTime) {
-        this.checkInTime = checkInTime;
-    }
+    public String getStudentId() { return studentId; }
+    public void setStudentId(String studentId) { this.studentId = studentId; }
 
-    public String getRemark() {
-        return remark;
-    }
+    public String getStudentName() { return studentName; }
+    public void setStudentName(String studentName) { this.studentName = studentName; }
 
-    public void setRemark(String remark) {
-        this.remark = remark;
+    public Long getCourseId() { return courseId; }
+    public void setCourseId(Long courseId) { this.courseId = courseId; }
+
+    public String getCourseName() { return courseName; }
+    public void setCourseName(String courseName) { this.courseName = courseName; }
+
+    public LocalDate getAttendanceDate() { return attendanceDate; }
+    public void setAttendanceDate(LocalDate attendanceDate) { this.attendanceDate = attendanceDate; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public LocalDateTime getCheckInTime() { return checkInTime; }
+    public void setCheckInTime(LocalDateTime checkInTime) { this.checkInTime = checkInTime; }
+
+    public LocalDateTime getCheckOutTime() { return checkOutTime; }
+    public void setCheckOutTime(LocalDateTime checkOutTime) { this.checkOutTime = checkOutTime; }
+
+    public String getSeatNumber() { return seatNumber; }
+    public void setSeatNumber(String seatNumber) { this.seatNumber = seatNumber; }
+
+    public Integer getSeatRow() { return seatRow; }
+    public void setSeatRow(Integer seatRow) { this.seatRow = seatRow; }
+
+    public Integer getSeatCol() { return seatCol; }
+    public void setSeatCol(Integer seatCol) { this.seatCol = seatCol; }
+
+    public String getRemark() { return remark; }
+    public void setRemark(String remark) { this.remark = remark; }
+
+    public LocalDateTime getCreateTime() { return createTime; }
+    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
+
+    public LocalDateTime getUpdateTime() { return updateTime; }
+    public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
+
+    @Override
+    public String toString() {
+        return "Attendance{" +
+                "id=" + id +
+                ", studentId='" + studentId + '\'' +
+                ", studentName='" + studentName + '\'' +
+                ", courseName='" + courseName + '\'' +
+                ", attendanceDate=" + attendanceDate +
+                ", status='" + status + '\'' +
+                '}';
     }
 }

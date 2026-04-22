@@ -2,8 +2,13 @@ package com.example.attendance.service.impl;
 
 import com.example.attendance.entity.Attendance;
 import com.example.attendance.repository.AttendanceRepository;
+import com.example.attendance.repository.AttendanceSpecification;
 import com.example.attendance.service.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -160,5 +165,74 @@ public class AttendanceServiceImpl implements AttendanceService {
         attendanceRepository.save(attendance);
         System.out.println("签到成功：" + studentId + " - " + status);
         return true;
+    }
+
+    @Override
+    public Page<Attendance> getAttendancePage(Pageable pageable) {
+        return attendanceRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Attendance> getAttendancePageByStudentId(String studentId, Pageable pageable) {
+        return attendanceRepository.findByStudentId(studentId, pageable);
+    }
+
+    @Override
+    public Page<Attendance> getAttendancePageByCourseId(Long courseId, Pageable pageable) {
+        return attendanceRepository.findByCourseId(courseId, pageable);
+    }
+
+    @Override
+    public Page<Attendance> getAttendancePageByDate(LocalDate date, Pageable pageable) {
+        return attendanceRepository.findByAttendanceDate(date, pageable);
+    }
+
+    @Override
+    public Page<Attendance> getAttendancePageByDateRange(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        return attendanceRepository.findByDateRange(startDate, endDate, pageable);
+    }
+
+    @Override
+    public List<Attendance> getAllAttendanceSorted(Sort sort) {
+        return attendanceRepository.findAll(sort);
+    }
+
+    @Override
+    public List<Attendance> getStudentAttendanceSorted(String studentId, Sort sort) {
+        return attendanceRepository.findByStudentId(studentId, sort);
+    }
+
+    @Override
+    public List<Attendance> getCourseAttendanceSorted(Long courseId, Sort sort) {
+        return attendanceRepository.findByCourseId(courseId, sort);
+    }
+
+    @Override
+    public List<Attendance> getAttendanceWithMultiSort(List<String> sorts) {
+        Sort sortOrder = Sort.unsorted();
+        for (String sortParam : sorts) {
+            String[] parts = sortParam.split(",");
+            String field = parts[0];
+            String direction = parts.length > 1 ? parts[1] : "asc";
+            Sort.Direction dir = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            sortOrder = sortOrder.and(Sort.by(dir, field));
+        }
+        return attendanceRepository.findAll(sortOrder);
+    }
+
+    @Override
+    public List<Attendance> searchAttendance(String studentId, Long courseId, String status,
+                                             LocalDate startDate, LocalDate endDate) {
+        Specification<Attendance> spec = AttendanceSpecification.buildQuery(
+                studentId, courseId, status, startDate, endDate);
+        return attendanceRepository.findAll(spec);
+    }
+
+    @Override
+    public Page<Attendance> searchAttendancePage(String studentId, Long courseId, String status,
+                                                 LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        Specification<Attendance> spec = AttendanceSpecification.buildQuery(
+                studentId, courseId, status, startDate, endDate);
+        return attendanceRepository.findAll(spec, pageable);
     }
 }

@@ -22,6 +22,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // 临时全部放行，方便测试
                         .anyRequest().permitAll()
                 );
         return http.build();

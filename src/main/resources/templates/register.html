@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>用户注册</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <h1>用户注册</h1>
+
+    <!-- 错误提示 -->
+    <div th:if="${error}" class="error-message" th:text="${errorMsg}">
+        注册失败
+    </div>
+
+    <!-- 成功提示 -->
+    <div th:if="${success}" class="success-message" th:text="${successMsg}">
+        注册成功
+    </div>
+
+    <form action="/register" method="post">
+        <div class="form-group">
+            <label>用户名：</label>
+            <input type="text" name="username" required placeholder="请输入用户名" th:value="${username}"/>
+        </div>
+
+        <div class="form-group">
+            <label>密码：</label>
+            <input type="password" name="password" required placeholder="请输入密码"/>
+        </div>
+
+        <div class="form-group">
+            <label>确认密码：</label>
+            <input type="password" name="confirmPassword" required placeholder="请再次输入密码"/>
+        </div>
+
+        <div class="form-group">
+            <label>真实姓名：</label>
+            <input type="text" name="realName" required placeholder="请输入真实姓名" th:value="${realName}"/>
+        </div>
+
+        <div class="form-group">
+            <label>角色：</label>
+            <select name="role" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:5px;">
+                <option value="student">学生</option>
+                <option value="teacher">教师</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>学号/工号：</label>
+            <input type="text" name="studentId" placeholder="学生请填写学号，教师请填写工号" th:value="${studentId}"/>
+        </div>
+
+        <div class="form-group">
+            <label>邮箱：</label>
+            <input type="email" name="email" placeholder="请输入邮箱" th:value="${email}"/>
+        </div>
+
+        <div class="form-group">
+            <label>电话：</label>
+            <input type="text" name="phone" placeholder="请输入电话" th:value="${phone}"/>
+        </div>
+
+        <button type="submit">注册</button>
+    </form>
+
+    <div class="links">
+        <a th:href="@{/login}">已有账号？立即登录</a>
+    </div>
+</div>
+</body>
+</html>

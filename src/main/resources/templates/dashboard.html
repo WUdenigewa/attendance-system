@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>考勤系统首页</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .dashboard {
+            max-width: 800px;
+            width: 100%;
+        }
+        .welcome {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .card h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .nav-links a:hover {
+            background: #764ba2;
+        }
+        .logout {
+            background: #dc3545;
+        }
+        .logout:hover {
+            background: #c82333;
+        }
+        .role-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .info-row {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .info-label {
+            font-weight: bold;
+            width: 100px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+<div class="container dashboard">
+    <div class="welcome">
+        <h2>欢迎回来，<span th:text="${user.realName}">用户</span>！</h2>
+        <p>欢迎使用班级考勤管理系统</p>
+        <span class="role-badge" th:text="${user.role}">角色</span>
+    </div>
+
+    <div class="card">
+        <h3>功能导航</h3>
+        <div class="nav-links">
+            <a th:href="@{/students}">学生管理</a>
+            <a th:href="@{/attendance}">考勤管理</a>
+            <a th:href="@{/courses}">课程管理</a>
+            <a th:href="@{/logout}" class="logout">退出登录</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>个人信息</h3>
+        <div class="info-row">
+            <span class="info-label">用户名：</span>
+            <span th:text="${user.username}">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">真实姓名：</span>
+            <span th:text="${user.realName}">-</span>
+        </div>
+        <div class="info-row" th:if="${user.studentId}">
+            <span class="info-label">学号：</span>
+            <span th:text="${user.studentId}">-</span>
+        </div>
+        <div class="info-row" th:if="${user.teacherNo}">
+            <span class="info-label">工号：</span>
+            <span th:text="${user.teacherNo}">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">邮箱：</span>
+            <span th:text="${user.email}">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">电话：</span>
+            <span th:text="${user.phone}">-</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

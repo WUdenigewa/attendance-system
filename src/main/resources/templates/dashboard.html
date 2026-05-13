@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>考勤系统首页</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}"/>
     <style>
         .dashboard {
             max-width: 800px;
@@ -81,7 +81,7 @@
     <div class="card">
         <h3>功能导航</h3>
         <div class="nav-links">
-            <a th:href="@{/students}">学生管理</a>
+            <a th:href="@{/student-web/list}">📚 学生管理</a>
             <a th:href="@{/attendance}">考勤管理</a>
             <a th:href="@{/courses}">课程管理</a>
             <a th:href="@{/logout}" class="logout">退出登录</a>
@@ -116,5 +116,7 @@
         </div>
     </div>
 </div>
+
+<script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

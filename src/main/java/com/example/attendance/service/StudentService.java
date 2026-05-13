@@ -1,48 +1,63 @@
 package com.example.attendance.service;
 
 import com.example.attendance.entity.Student;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface StudentService {
 
+    // ========== 基础增删改查 ==========
+
     /**
      * 新增学生
-     * @param student 学生对象
-     * @return 是否成功
      */
     boolean addStudent(Student student);
 
     /**
+     * 根据ID查询学生
+     */
+    Student getStudentById(Long id);
+
+    /**
      * 根据学号查询学生
-     * @param studentId 学号
-     * @return 学生对象
      */
     Student getStudentByStudentId(String studentId);
 
     /**
      * 查询所有学生
-     * @return 学生列表
      */
     List<Student> getAllStudents();
 
     /**
      * 根据班级查询学生
-     * @param className 班级名称
-     * @return 学生列表
      */
     List<Student> getStudentsByClassName(String className);
 
     /**
      * 更新学生信息
-     * @param student 学生对象
-     * @return 是否成功
      */
     boolean updateStudent(Student student);
 
     /**
-     * 删除学生
-     * @param studentId 学号
-     * @return 是否成功
+     * 根据学号删除学生
      */
     boolean deleteStudent(String studentId);
+
+    /**
+     * 根据ID删除学生
+     */
+    boolean deleteStudentById(Long id);
+
+    // ========== 分页查询方法 ==========
+
+    /**
+     * 分页查询所有学生
+     */
+    Page<Student> getAllStudentsPage(Pageable pageable);
+
+    /**
+     * 根据关键词搜索学生（姓名或学号模糊匹配）
+     */
+    Page<Student> searchByKeyword(String keyword, Pageable pageable);
 }

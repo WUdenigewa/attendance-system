@@ -1,130 +1,145 @@
 package com.example.attendance.service.impl;
 
-import com.example.attendance.dao.StudentDao;
 import com.example.attendance.entity.Student;
+import com.example.attendance.repository.StudentRepository;
 import com.example.attendance.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class StudentServiceImpl implements StudentService {
 
     @Autowired
-    private StudentDao studentDao;  // 注入 Dao 层
+    private StudentRepository studentRepository;
+
+    // ========== 基础增删改查实现 ==========
 
     @Override
     public boolean addStudent(Student student) {
-        // 业务校验1：学号不能为空
+        // 1. 校验学号
         if (student.getStudentId() == null || student.getStudentId().trim().isEmpty()) {
-            System.out.println("业务校验失败：学号不能为空");
+            System.out.println("添加失败：学号不能为空");
             return false;
         }
-
-        // 业务校验2：姓名不能为空
+        // 2. 校验姓名
         if (student.getName() == null || student.getName().trim().isEmpty()) {
-            System.out.println("业务校验失败：姓名不能为空");
+            System.out.println("添加失败：姓名不能为空");
             return false;
         }
-
-        // 业务校验3：专业不能为空
+        // 3. 校验专业
         if (student.getMajor() == null || student.getMajor().trim().isEmpty()) {
-            System.out.println("业务校验失败：专业不能为空");
+            System.out.println("添加失败：专业不能为空");
             return false;
         }
-
-        // 业务校验4：班级不能为空
+        // 4. 校验班级
         if (student.getClassName() == null || student.getClassName().trim().isEmpty()) {
-            System.out.println("业务校验失败：班级不能为空");
+            System.out.println("添加失败：班级不能为空");
             return false;
         }
-
-        // 业务校验5：电话不能为空
-        if (student.getPhone() == null || student.getPhone().trim().isEmpty()) {
-            System.out.println("业务校验失败：电话不能为空");
+        // 5. 检查学号是否已存在
+        if (studentRepository.existsByStudentId(student.getStudentId())) {
+            System.out.println("添加失败：学号已存在 - " + student.getStudentId());
             return false;
         }
+        // 6. 保存学生
+        studentRepository.save(student);
+        System.out.println("学生添加成功：" + student.getName());
+        return true;
+    }
 
-        // 业务校验6：邮箱不能为空
-        if (student.getEmail() == null || student.getEmail().trim().isEmpty()) {
-            System.out.println("业务校验失败：邮箱不能为空");
-            return false;
+    @Override
+    public Student getStudentById(Long id) {
+        if (id == null || id <= 0) {
+            return null;
         }
-
-        // 业务校验7：学号格式校验（8位学号：2024开头+4位数字）
-        if (!student.getStudentId().matches("^2024\\d{4}$")) {
-            System.out.println("业务校验失败：学号格式不正确，应为2024开头+4位数字（共8位）");
-            return false;
-        }
-
-        // 业务校验8：学号是否已存在
-        if (studentDao.existsByStudentId(student.getStudentId())) {
-            System.out.println("业务校验失败：学号 " + student.getStudentId() + " 已存在");
-            return false;
-        }
-
-        // 调用 Dao 层保存数据
-        int result = studentDao.insert(student);
-        return result > 0;
+        Optional<Student> student = studentRepository.findById(id);
+        return student.orElse(null);
     }
 
     @Override
     public Student getStudentByStudentId(String studentId) {
-        // 业务校验：学号不能为空
         if (studentId == null || studentId.trim().isEmpty()) {
             return null;
         }
-        // 调用 Dao 层查询
-        return studentDao.findByStudentId(studentId);
+        Optional<Student> student = studentRepository.findByStudentId(studentId);
+        return student.orElse(null);
     }
 
     @Override
     public List<Student> getAllStudents() {
-        // 调用 Dao 层查询所有
-        return studentDao.findAll();
+        return studentRepository.findAll();
     }
 
     @Override
     public List<Student> getStudentsByClassName(String className) {
-        // 业务校验：班级名称为空时返回空列表
         if (className == null || className.trim().isEmpty()) {
             return List.of();
         }
-        // 调用 Dao 层按班级查询
-        return studentDao.findByClassName(className);
+        return studentRepository.findByClassName(className);
     }
 
     @Override
     public boolean updateStudent(Student student) {
-        // 业务校验：学号不能为空
-        if (student.getStudentId() == null || student.getStudentId().trim().isEmpty()) {
+        // 1. 校验ID
+        if (student.getId() == null) {
+            System.out.println("更新失败：学生ID不能为空");
             return false;
         }
-
-        // 业务校验：学生是否存在
-        if (!studentDao.existsByStudentId(student.getStudentId())) {
+        // 2. 检查学生是否存在
+        Optional<Student> existing = studentRepository.findById(student.getId());
+        if (existing.isEmpty()) {
+            System.out.println("更新失败：学生不存在，ID：" + student.getId());
             return false;
         }
-
-        // 调用 Dao 层更新
-        int result = studentDao.update(student);
-        return result > 0;
+        // 3. 更新学生
+        studentRepository.save(student);
+        System.out.println("学生更新成功：" + student.getName());
+        return true;
     }
 
     @Override
     public boolean deleteStudent(String studentId) {
-        // 业务校验：学号不能为空
         if (studentId == null || studentId.trim().isEmpty()) {
+            System.out.println("删除失败：学号不能为空");
             return false;
         }
-
-        // 业务校验：学生是否存在
-        if (!studentDao.existsByStudentId(studentId)) {
+        if (!studentRepository.existsByStudentId(studentId)) {
+            System.out.println("删除失败：学生不存在，学号：" + studentId);
             return false;
         }
+        studentRepository.deleteByStudentId(studentId);
+        System.out.println("学生删除成功，学号：" + studentId);
+        return true;
+    }
 
-        // 调用 Dao 层删除
-        int result = studentDao.deleteByStudentId(studentId);
-        return result > 0;
+    @Override
+    public boolean deleteStudentById(Long id) {
+        if (id == null || id <= 0) {
+            System.out.println("删除失败：学生ID不能为空");
+            return false;
+        }
+        if (!studentRepository.existsById(id)) {
+            System.out.println("删除失败：学生不存在，ID：" + id);
+            return false;
+        }
+        studentRepository.deleteById(id);
+        System.out.println("学生删除成功，ID：" + id);
+        return true;
+    }
+
+    // ========== 分页查询实现 ==========
+
+    @Override
+    public Page<Student> getAllStudentsPage(Pageable pageable) {
+        return studentRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Student> searchByKeyword(String keyword, Pageable pageable) {
+        return studentRepository.findByNameContainingOrStudentIdContaining(keyword, keyword, pageable);
     }
 }

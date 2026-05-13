@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>学生列表</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}"/>
+    <style>
+        .container { max-width: 1200px; margin-top: 30px; }
+        .search-box { margin-bottom: 20px; }
+        .pagination { margin-top: 20px; justify-content: center; }
+        .action-buttons { display: flex; gap: 5px; }
+        .alert { margin-bottom: 20px; }
+        .table th { text-align: center; vertical-align: middle; }
+        .table td { text-align: center; vertical-align: middle; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 class="mb-4">📚 学生列表</h2>
+
+    <!-- 提示信息 -->
+    <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${errorMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- 搜索框和新增按钮 -->
+    <div class="row search-box">
+        <div class="col-md-6">
+            <form action="/student-web/list" method="get" class="d-flex">
+                <input type="text" name="keyword" class="form-control me-2"
+                       placeholder="按姓名或学号搜索" th:value="${keyword}"/>
+                <button type="submit" class="btn btn-primary">🔍 搜索</button>
+                <a th:href="@{/student-web/list}" class="btn btn-secondary ms-2">重置</a>
+            </form>
+        </div>
+        <div class="col-md-6 text-end">
+            <a th:href="@{/student-web/add}" class="btn btn-success">➕ 新增学生</a>
+        </div>
+    </div>
+
+    <!-- 学生表格 -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>学号</th>
+                <th>姓名</th>
+                <th>专业</th>
+                <th>班级</th>
+                <th>电话</th>
+                <th>邮箱</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="student : ${students}">
+                <td th:text="${student.id}">1</td>
+                <td th:text="${student.studentId}">20240001</td>
+                <td th:text="${student.name}">张三</td>
+                <td th:text="${student.major}">软件工程</td>
+                <td th:text="${student.className}">软件1班</td>
+                <td th:text="${student.phone}">13800138001</td>
+                <td th:text="${student.email}">zhangsan@test.com</td>
+                <td class="action-buttons">
+                    <a th:href="@{/student-web/edit/{id}(id=${student.id})}"
+                       class="btn btn-sm btn-info">✏️ 编辑</a>
+                    <a th:href="@{/student-web/delete/{id}(id=${student.id})}"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('确定要删除该学生吗？')">🗑️ 删除</a>
+                </td>
+            </tr>
+            <tr th:if="${students.isEmpty()}">
+                <td colspan="8" class="text-center text-muted">暂无数据</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 分页导航 -->
+    <nav th:if="${totalPages > 0}">
+        <ul class="pagination">
+            <li th:class="${currentPage == 1} ? 'page-item disabled' : 'page-item'">
+                <a class="page-link" th:href="@{/student-web/list(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword})}">上一页</a>
+            </li>
+            <li th:each="i : ${#numbers.sequence(1, totalPages)}"
+                th:class="${i == currentPage} ? 'page-item active' : 'page-item'">
+                <a class="page-link" th:href="@{/student-web/list(page=${i}, size=${pageSize}, keyword=${keyword})}" th:text="${i}">1</a>
+            </li>
+            <li th:class="${currentPage == totalPages} ? 'page-item disabled' : 'page-item'">
+                <a class="page-link" th:href="@{/student-web/list(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword})}">下一页</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 统计信息 -->
+    <div class="text-muted mt-3 text-center">
+        共 <span th:text="${totalElements}">0</span> 条记录，当前第 <span th:text="${currentPage}">1</span> / <span th:text="${totalPages}">1</span> 页，每页显示 <span th:text="${pageSize}">10</span> 条
+    </div>
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

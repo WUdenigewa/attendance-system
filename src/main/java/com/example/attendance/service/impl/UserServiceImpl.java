@@ -4,6 +4,7 @@ import com.example.attendance.dao.UserDao;
 import com.example.attendance.entity.User;
 import com.example.attendance.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -12,6 +13,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public boolean addUser(User user) {
@@ -30,6 +34,11 @@ public class UserServiceImpl implements UserService {
         if (user.getStatus() == null) {
             user.setStatus(1);
         }
+        // 密码加密
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        System.out.println("原始密码：" + user.getPassword());
+        System.out.println("加密后密码：" + encodedPassword);
+        user.setPassword(encodedPassword);
         int result = userDao.insert(user);
         return result > 0;
     }
@@ -92,34 +101,47 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User login(String username, String password) {
-        // 1. 参数校验
+        // 参数校验
         if (username == null || username.trim().isEmpty()) {
             System.out.println("登录失败：用户名不能为空");
             return null;
         }
+        if (password == null || password.trim().isEmpty()) {
+            System.out.println("登录失败：密码不能为空");
+            return null;
+        }
 
-        // 2. 根据用户名查询用户
+        // 查询用户
         User user = userDao.findByUsername(username);
-
-        // 3. 验证用户是否存在
         if (user == null) {
             System.out.println("登录失败：用户不存在 - " + username);
             return null;
         }
 
-        // 4. 检查用户状态
+        // 检查状态
         if (user.getStatus() == null || user.getStatus() != 1) {
             System.out.println("登录失败：用户已被禁用 - " + username);
             return null;
         }
 
-        // 5. 跳过密码验证，直接登录成功
-        System.out.println("登录成功：" + username + "（跳过密码验证）");
+        // ========== 调试日志 ==========
+        System.out.println("=== 登录调试信息 ===");
+        System.out.println("输入的用户名：" + username);
+        System.out.println("输入的密码：" + password);
+        System.out.println("数据库中的密码：" + user.getPassword());
+        System.out.println("密码是否以$2a$开头：" + user.getPassword().startsWith("$2a$"));
+        System.out.println("密码匹配结果：" + passwordEncoder.matches(password, user.getPassword()));
+        System.out.println("===================");
 
-        // 6. 更新最后登录时间
+        // 密码验证
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            System.out.println("登录失败：密码错误 - " + username);
+            return null;
+        }
+
+        // 登录成功
+        System.out.println("登录成功：" + username);
         userDao.updateLastLoginTime(user.getId());
-
-        // 7. 返回用户信息（密码置空）
         user.setPassword(null);
         return user;
     }

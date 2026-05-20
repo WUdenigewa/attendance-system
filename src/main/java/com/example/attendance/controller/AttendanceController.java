@@ -134,144 +134,14 @@ public class AttendanceController {
             }
             pageable = PageRequest.of(page, size, sortOrder);
         } else {
-            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "attendanceDate"));
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "checkInTime"));
         }
 
         Page<Attendance> attendancePage = attendanceService.getAttendancePage(pageable);
         return Result.success(attendancePage);
     }
 
-    @GetMapping("/page/student/{studentId}")
-    public Result<Page<Attendance>> getAttendancePageByStudentId(
-            @PathVariable String studentId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String sortField,
-            @RequestParam(defaultValue = "desc") String direction) {
-
-        Pageable pageable;
-        if (sortField != null && !sortField.isEmpty()) {
-            Sort.Direction dir = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-            pageable = PageRequest.of(page, size, Sort.by(dir, sortField));
-        } else {
-            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "attendanceDate"));
-        }
-
-        Page<Attendance> attendancePage = attendanceService.getAttendancePageByStudentId(studentId, pageable);
-        return Result.success(attendancePage);
-    }
-
-    @GetMapping("/page/course/{courseId}")
-    public Result<Page<Attendance>> getAttendancePageByCourseId(
-            @PathVariable Long courseId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String sortField,
-            @RequestParam(defaultValue = "desc") String direction) {
-
-        Pageable pageable;
-        if (sortField != null && !sortField.isEmpty()) {
-            Sort.Direction dir = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-            pageable = PageRequest.of(page, size, Sort.by(dir, sortField));
-        } else {
-            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "attendanceDate"));
-        }
-
-        Page<Attendance> attendancePage = attendanceService.getAttendancePageByCourseId(courseId, pageable);
-        return Result.success(attendancePage);
-    }
-
-    @GetMapping("/page/date")
-    public Result<Page<Attendance>> getAttendancePageByDate(
-            @RequestParam String date,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String sortField,
-            @RequestParam(defaultValue = "asc") String direction) {
-
-        LocalDate queryDate = LocalDate.parse(date);
-
-        Pageable pageable;
-        if (sortField != null && !sortField.isEmpty()) {
-            Sort.Direction dir = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-            pageable = PageRequest.of(page, size, Sort.by(dir, sortField));
-        } else {
-            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "checkInTime"));
-        }
-
-        Page<Attendance> attendancePage = attendanceService.getAttendancePageByDate(queryDate, pageable);
-        return Result.success(attendancePage);
-    }
-
-    @GetMapping("/page/range")
-    public Result<Page<Attendance>> getAttendancePageByDateRange(
-            @RequestParam String startDate,
-            @RequestParam String endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String sortField,
-            @RequestParam(defaultValue = "desc") String direction) {
-
-        LocalDate start = LocalDate.parse(startDate);
-        LocalDate end = LocalDate.parse(endDate);
-
-        Pageable pageable;
-        if (sortField != null && !sortField.isEmpty()) {
-            Sort.Direction dir = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-            pageable = PageRequest.of(page, size, Sort.by(dir, sortField));
-        } else {
-            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "attendanceDate"));
-        }
-
-        Page<Attendance> attendancePage = attendanceService.getAttendancePageByDateRange(start, end, pageable);
-        return Result.success(attendancePage);
-    }
-
-    // ========== 排序接口 ==========
-
-    @GetMapping("/sorted")
-    public Result<List<Attendance>> getAllAttendanceSorted(
-            @RequestParam(defaultValue = "attendanceDate") String sortField,
-            @RequestParam(defaultValue = "desc") String direction) {
-
-        Sort.Direction dir = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(dir, sortField);
-        List<Attendance> list = attendanceService.getAllAttendanceSorted(sort);
-        return Result.success(list);
-    }
-
-    @GetMapping("/sorted/student/{studentId}")
-    public Result<List<Attendance>> getStudentAttendanceSorted(
-            @PathVariable String studentId,
-            @RequestParam(defaultValue = "attendanceDate") String sortField,
-            @RequestParam(defaultValue = "desc") String direction) {
-
-        Sort.Direction dir = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(dir, sortField);
-        List<Attendance> list = attendanceService.getStudentAttendanceSorted(studentId, sort);
-        return Result.success(list);
-    }
-
-    @GetMapping("/sorted/course/{courseId}")
-    public Result<List<Attendance>> getCourseAttendanceSorted(
-            @PathVariable Long courseId,
-            @RequestParam(defaultValue = "attendanceDate") String sortField,
-            @RequestParam(defaultValue = "desc") String direction) {
-
-        Sort.Direction dir = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(dir, sortField);
-        List<Attendance> list = attendanceService.getCourseAttendanceSorted(courseId, sort);
-        return Result.success(list);
-    }
-
-    @GetMapping("/sort/multi")
-    public Result<List<Attendance>> getAttendanceWithMultiSort(
-            @RequestParam List<String> sort) {
-        List<Attendance> list = attendanceService.getAttendanceWithMultiSort(sort);
-        return Result.success(list);
-    }
-
-    // ========== 多条件动态查询接口 ==========
+    // ========== 多条件查询接口 ==========
 
     @GetMapping("/search")
     public Result<List<Attendance>> searchAttendance(
@@ -308,42 +178,8 @@ public class AttendanceController {
             Sort.Direction dir = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
             pageable = PageRequest.of(page, size, Sort.by(dir, sortField));
         } else {
-            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "attendanceDate"));
+            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "checkInTime"));
         }
-
-        Page<Attendance> attendancePage = attendanceService.searchAttendancePage(
-                studentId, courseId, status, start, end, pageable);
-        return Result.success(attendancePage);
-    }
-
-    @GetMapping("/page/advanced")
-    public Result<Page<Attendance>> advancedPageQuery(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) List<String> sort,
-            @RequestParam(required = false) String studentId,
-            @RequestParam(required = false) Long courseId,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String startDate,
-            @RequestParam(required = false) String endDate) {
-
-        Pageable pageable;
-        if (sort != null && !sort.isEmpty()) {
-            Sort sortOrder = Sort.unsorted();
-            for (String sortParam : sort) {
-                String[] parts = sortParam.split(",");
-                String field = parts[0];
-                String direction = parts.length > 1 ? parts[1] : "asc";
-                Sort.Direction dir = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
-                sortOrder = sortOrder.and(Sort.by(dir, field));
-            }
-            pageable = PageRequest.of(page, size, sortOrder);
-        } else {
-            pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "attendanceDate"));
-        }
-
-        LocalDate start = (startDate != null) ? LocalDate.parse(startDate) : null;
-        LocalDate end = (endDate != null) ? LocalDate.parse(endDate) : null;
 
         Page<Attendance> attendancePage = attendanceService.searchAttendancePage(
                 studentId, courseId, status, start, end, pageable);

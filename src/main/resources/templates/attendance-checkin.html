@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>考勤打卡</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}"/>
+    <style>
+        .container { max-width: 600px; margin-top: 50px; }
+        .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .btn-submit { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; width: 100%; }
+        .btn-submit:hover { background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card shadow">
+        <div class="card-header text-white text-center">
+            <h3>✅ 考勤打卡</h3>
+        </div>
+        <div class="card-body">
+            <!-- 成功提示 -->
+            <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${successMsg}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- 错误提示 -->
+            <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${errorMsg}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <form th:action="@{/attendance/checkIn}" method="post">
+                <div class="mb-3">
+                    <label class="form-label">选择课程：</label>
+                    <select class="form-select" name="courseId" required>
+                        <option value="">-- 请选择课程 --</option>
+                        <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.courseName} + ' (' + ${course.className} + ')'">
+                            课程名称
+                        </option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">座位号（可选）：</label>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="number" class="form-control" name="seatRow" placeholder="行号" min="1" max="20">
+                        </div>
+                        <div class="col-md-6">
+                            <input type="number" class="form-control" name="seatCol" placeholder="列号" min="1" max="20">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">备注：</label>
+                    <textarea class="form-control" name="remark" rows="3" placeholder="如有特殊情况请填写备注"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-submit text-white py-2">📝 提交打卡</button>
+                <a th:href="@{/attendance/list}" class="btn btn-secondary w-100 mt-2">📋 查看我的考勤记录</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

@@ -3,7 +3,6 @@ package com.example.attendance.service;
 import com.example.attendance.entity.Attendance;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,9 +32,9 @@ public interface AttendanceService {
 
     // ========== 排序方法 ==========
 
-    List<Attendance> getAllAttendanceSorted(Sort sort);
-    List<Attendance> getStudentAttendanceSorted(String studentId, Sort sort);
-    List<Attendance> getCourseAttendanceSorted(Long courseId, Sort sort);
+    List<Attendance> getAllAttendanceSorted(org.springframework.data.domain.Sort sort);
+    List<Attendance> getStudentAttendanceSorted(String studentId, org.springframework.data.domain.Sort sort);
+    List<Attendance> getCourseAttendanceSorted(Long courseId, org.springframework.data.domain.Sort sort);
     List<Attendance> getAttendanceWithMultiSort(List<String> sorts);
 
     // ========== 多条件查询方法 ==========

@@ -12,23 +12,20 @@ public class Attendance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "student_id", nullable = false, length = 20)
+    @Column(name = "student_id", length = 20)
     private String studentId;
 
-    @Column(name = "student_name", nullable = false, length = 50)
+    @Column(name = "student_name", length = 50)
     private String studentName;
 
-    @Column(name = "course_id", nullable = false)
+    @Column(name = "course_id")
     private Long courseId;
 
-    @Column(name = "course_name", nullable = false, length = 100)
+    @Column(name = "course_name", length = 100)
     private String courseName;
 
-    @Column(name = "attendance_date", nullable = false)
+    @Column(name = "attendance_date")
     private LocalDate attendanceDate;
-
-    @Column(name = "status", nullable = false, length = 20)
-    private String status;
 
     @Column(name = "check_in_time")
     private LocalDateTime checkInTime;
@@ -36,37 +33,28 @@ public class Attendance {
     @Column(name = "check_out_time")
     private LocalDateTime checkOutTime;
 
-    @Column(name = "seat_number", length = 20)
-    private String seatNumber;
-
     @Column(name = "seat_row")
     private Integer seatRow;
 
     @Column(name = "seat_col")
     private Integer seatCol;
 
+    @Column(length = 20)
+    private String status;
+
+    @Column(length = 15)
+    private String ip;
+
     @Column(name = "remark", length = 500)
     private String remark;
 
-    @Column(name = "create_time", updatable = false)
+    @Column(name = "create_time")
     private LocalDateTime createTime;
 
     @Column(name = "update_time")
     private LocalDateTime updateTime;
 
-    // 无参构造函数
     public Attendance() {}
-
-    // 有参构造函数（简化版）
-    public Attendance(String studentId, String studentName, Long courseId, String courseName,
-                      LocalDate attendanceDate, String status) {
-        this.studentId = studentId;
-        this.studentName = studentName;
-        this.courseId = courseId;
-        this.courseName = courseName;
-        this.attendanceDate = attendanceDate;
-        this.status = status;
-    }
 
     @PrePersist
     protected void onCreate() {
@@ -79,7 +67,7 @@ public class Attendance {
         updateTime = LocalDateTime.now();
     }
 
-    // Getter 和 Setter
+    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -98,23 +86,23 @@ public class Attendance {
     public LocalDate getAttendanceDate() { return attendanceDate; }
     public void setAttendanceDate(LocalDate attendanceDate) { this.attendanceDate = attendanceDate; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
     public LocalDateTime getCheckInTime() { return checkInTime; }
     public void setCheckInTime(LocalDateTime checkInTime) { this.checkInTime = checkInTime; }
 
     public LocalDateTime getCheckOutTime() { return checkOutTime; }
     public void setCheckOutTime(LocalDateTime checkOutTime) { this.checkOutTime = checkOutTime; }
 
-    public String getSeatNumber() { return seatNumber; }
-    public void setSeatNumber(String seatNumber) { this.seatNumber = seatNumber; }
-
     public Integer getSeatRow() { return seatRow; }
     public void setSeatRow(Integer seatRow) { this.seatRow = seatRow; }
 
     public Integer getSeatCol() { return seatCol; }
     public void setSeatCol(Integer seatCol) { this.seatCol = seatCol; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getIp() { return ip; }
+    public void setIp(String ip) { this.ip = ip; }
 
     public String getRemark() { return remark; }
     public void setRemark(String remark) { this.remark = remark; }
@@ -124,16 +112,4 @@ public class Attendance {
 
     public LocalDateTime getUpdateTime() { return updateTime; }
     public void setUpdateTime(LocalDateTime updateTime) { this.updateTime = updateTime; }
-
-    @Override
-    public String toString() {
-        return "Attendance{" +
-                "id=" + id +
-                ", studentId='" + studentId + '\'' +
-                ", studentName='" + studentName + '\'' +
-                ", courseName='" + courseName + '\'' +
-                ", attendanceDate=" + attendanceDate +
-                ", status='" + status + '\'' +
-                '}';
-    }
 }

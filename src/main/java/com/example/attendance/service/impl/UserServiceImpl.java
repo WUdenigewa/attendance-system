@@ -4,7 +4,6 @@ import com.example.attendance.dao.UserDao;
 import com.example.attendance.entity.User;
 import com.example.attendance.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -14,8 +13,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserDao userDao;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    // ========== 原有的其他方法保持不变 ==========
 
     @Override
     public boolean addUser(User user) {
@@ -34,11 +32,6 @@ public class UserServiceImpl implements UserService {
         if (user.getStatus() == null) {
             user.setStatus(1);
         }
-        // 密码加密
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
-        System.out.println("原始密码：" + user.getPassword());
-        System.out.println("加密后密码：" + encodedPassword);
-        user.setPassword(encodedPassword);
         int result = userDao.insert(user);
         return result > 0;
     }
@@ -57,6 +50,15 @@ public class UserServiceImpl implements UserService {
             return null;
         }
         return userDao.findByUsername(username);
+    }
+
+    // ========== 新增：根据学号查询用户 ==========
+    @Override
+    public User getUserByStudentId(String studentId) {
+        if (studentId == null || studentId.trim().isEmpty()) {
+            return null;
+        }
+        return userDao.findByStudentId(studentId);
     }
 
     @Override
@@ -101,7 +103,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User login(String username, String password) {
-        // 参数校验
         if (username == null || username.trim().isEmpty()) {
             System.out.println("登录失败：用户名不能为空");
             return null;
@@ -110,36 +111,15 @@ public class UserServiceImpl implements UserService {
             System.out.println("登录失败：密码不能为空");
             return null;
         }
-
-        // 查询用户
         User user = userDao.findByUsername(username);
         if (user == null) {
             System.out.println("登录失败：用户不存在 - " + username);
             return null;
         }
-
-        // 检查状态
         if (user.getStatus() == null || user.getStatus() != 1) {
             System.out.println("登录失败：用户已被禁用 - " + username);
             return null;
         }
-
-        // ========== 调试日志 ==========
-        System.out.println("=== 登录调试信息 ===");
-        System.out.println("输入的用户名：" + username);
-        System.out.println("输入的密码：" + password);
-        System.out.println("数据库中的密码：" + user.getPassword());
-        System.out.println("密码是否以$2a$开头：" + user.getPassword().startsWith("$2a$"));
-        System.out.println("密码匹配结果：" + passwordEncoder.matches(password, user.getPassword()));
-        System.out.println("===================");
-
-        // 密码验证
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            System.out.println("登录失败：密码错误 - " + username);
-            return null;
-        }
-
-        // 登录成功
         System.out.println("登录成功：" + username);
         userDao.updateLastLoginTime(user.getId());
         user.setPassword(null);

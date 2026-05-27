@@ -7,55 +7,20 @@ public interface UserService {
 
     // ========== 增删改查方法 ==========
 
-    /**
-     * 新增用户
-     */
     boolean addUser(User user);
-
-    /**
-     * 根据ID查询用户
-     */
     User getUserById(Long id);
-
-    /**
-     * 根据用户名查询用户
-     */
     User getUserByUsername(String username);
-
-    /**
-     * 查询所有教师
-     */
     List<User> getAllTeachers();
-
-    /**
-     * 查询所有用户
-     */
     List<User> getAllUsers();
-
-    /**
-     * 更新用户信息
-     */
     boolean updateUser(User user);
-
-    /**
-     * 删除用户
-     */
     boolean deleteUser(Long id);
+
+    // ========== 新增：根据学号查询用户 ==========
+    User getUserByStudentId(String studentId);
 
     // ========== 认证相关方法 ==========
 
-    /**
-     * 用户登录验证
-     */
     User login(String username, String password);
-
-    /**
-     * 用户注册（带密码加密）
-     */
     boolean register(User user);
-
-    /**
-     * 检查用户名是否存在
-     */
     boolean existsByUsername(String username);
 }

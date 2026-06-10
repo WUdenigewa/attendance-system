@@ -37,9 +37,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // 以下路径不需要登录，可以直接访问
                         .requestMatchers("/css/**", "/js/**", "/login", "/register", "/about", "/webjars/**").permitAll()
-                        // 其他所有请求都需要登录
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

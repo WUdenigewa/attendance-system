@@ -1,41 +1,34 @@
 package com.example.attendance.entity;
 
-/**
- * 考勤统计结果类
- * 用于展示学生的考勤统计数据
- */
 public class StatisticsDTO {
 
     private long totalCount;      // 总考勤次数
     private long normalCount;     // 正常次数
     private long lateCount;       // 迟到次数
+    private long leaveCount;      // 请假次数
     private long absentCount;     // 缺勤次数
-    private double attendanceRate; // 出勤率（百分比）
+    private double attendanceRate; // 出勤率
 
-    /**
-     * 无参构造函数
-     */
+    // 无参构造函数
     public StatisticsDTO() {
     }
 
-    /**
-     * 全参构造函数
-     * @param totalCount 总次数
-     * @param normalCount 正常次数
-     * @param lateCount 迟到次数
-     * @param absentCount 缺勤次数
-     */
-    public StatisticsDTO(long totalCount, long normalCount, long lateCount, long absentCount) {
+    // 全参构造函数（5个参数）
+    public StatisticsDTO(long totalCount, long normalCount, long lateCount, long leaveCount, long absentCount) {
         this.totalCount = totalCount;
         this.normalCount = normalCount;
         this.lateCount = lateCount;
+        this.leaveCount = leaveCount;
         this.absentCount = absentCount;
-        // 计算出勤率 = 正常次数 / 总次数 × 100
         this.attendanceRate = totalCount > 0 ? (double) normalCount / totalCount * 100 : 0;
     }
 
-    // ========== Getter 和 Setter ==========
+    // 简化构造函数（4个参数，兼容旧代码）
+    public StatisticsDTO(long totalCount, long normalCount, long lateCount, long absentCount) {
+        this(totalCount, normalCount, lateCount, 0, absentCount);
+    }
 
+    // Getters and Setters
     public long getTotalCount() {
         return totalCount;
     }
@@ -58,6 +51,14 @@ public class StatisticsDTO {
 
     public void setLateCount(long lateCount) {
         this.lateCount = lateCount;
+    }
+
+    public long getLeaveCount() {
+        return leaveCount;
+    }
+
+    public void setLeaveCount(long leaveCount) {
+        this.leaveCount = leaveCount;
     }
 
     public long getAbsentCount() {

@@ -31,6 +31,7 @@
             </div>
 
             <form th:action="@{/attendance/checkIn}" method="post">
+                <!-- 课程选择 -->
                 <div class="mb-3">
                     <label class="form-label">选择课程：</label>
                     <select class="form-select" name="courseId" required>
@@ -41,6 +42,20 @@
                     </select>
                 </div>
 
+                <!-- 打卡状态选择（新增） -->
+                <div class="mb-3">
+                    <label class="form-label">打卡状态：</label>
+                    <select class="form-select" name="status">
+                        <option value="NORMAL">正常</option>
+                        <option value="LATE">迟到</option>
+                        <option value="LEAVE">请假</option>
+                    </select>
+                    <div class="form-text text-muted">
+                        📌 正常：按时上课；迟到：晚于上课时间；请假：提前申请
+                    </div>
+                </div>
+
+                <!-- 座位号（可选） -->
                 <div class="mb-3">
                     <label class="form-label">座位号（可选）：</label>
                     <div class="row">
@@ -53,9 +68,10 @@
                     </div>
                 </div>
 
+                <!-- 备注 -->
                 <div class="mb-3">
                     <label class="form-label">备注：</label>
-                    <textarea class="form-control" name="remark" rows="3" placeholder="如有特殊情况请填写备注"></textarea>
+                    <textarea class="form-control" name="remark" rows="3" placeholder="如有特殊情况请填写备注（请假请填写原因）"></textarea>
                 </div>
 
                 <button type="submit" class="btn btn-submit text-white py-2">📝 提交打卡</button>

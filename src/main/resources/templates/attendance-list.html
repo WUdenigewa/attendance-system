@@ -5,122 +5,47 @@
     <title>考勤记录</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}"/>
     <style>
-        .status-badge { padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+        .container { max-width: 1200px; margin-top: 30px; }
+        .status-badge { padding: 5px 10px; border-radius: 5px; font-size: 12px; display: inline-block; }
         .status-normal { background-color: #28a745; color: white; }
         .status-late { background-color: #ffc107; color: #333; }
-        .status-early { background-color: #fd7e14; color: white; }
+        .status-leave { background-color: #17a2b8; color: white; }
         .status-absent { background-color: #dc3545; color: white; }
-        .filter-box { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-<!-- 导航栏 -->
-<!-- <div th:replace="~{fragments/navbar :: navbar}"></div> -->
+<div class="container">
+    <h2>📋 我的考勤记录</h2>
 
-<div class="container mt-4">
-    <h2>考勤记录</h2>
-
-    <!-- 筛选条件 -->
-    <div class="filter-box">
-        <form th:action="@{/attendance/list}" method="get" class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label">开始日期：</label>
-                <input type="date" class="form-control" name="startDate" th:value="${startDate}"/>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">结束日期：</label>
-                <input type="date" class="form-control" name="endDate" th:value="${endDate}"/>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">课程：</label>
-                <select class="form-select" name="courseId">
-                    <option value="">全部课程</option>
-                    <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.courseName}" th:selected="${courseId == course.id}"></option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">状态：</label>
-                <select class="form-select" name="status">
-                    <option value="">全部状态</option>
-                    <option value="NORMAL" th:selected="${status == 'NORMAL'}">正常</option>
-                    <option value="LATE" th:selected="${status == 'LATE'}">迟到</option>
-                    <option value="EARLY" th:selected="${status == 'EARLY'}">早退</option>
-                    <option value="ABSENT" th:selected="${status == 'ABSENT'}">缺勤</option>
-                </select>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">查询</button>
-            </div>
-        </form>
-    </div>
-
-    <!-- 快捷筛选按钮 -->
-    <div class="mb-3">
-        <a th:href="@{/attendance/list(today='true')}" class="btn btn-sm btn-outline-primary">今天</a>
-        <a th:href="@{/attendance/list(week='true')}" class="btn btn-sm btn-outline-primary">本周</a>
-        <a th:href="@{/attendance/list(month='true')}" class="btn btn-sm btn-outline-primary">本月</a>
-        <a th:href="@{/attendance/list}" class="btn btn-sm btn-outline-secondary">全部</a>
-    </div>
-
-    <!-- 数据表格 -->
     <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="table-dark">
-            <tr>
-                <th>日期</th>
-                <th>课程</th>
-                <th>打卡时间</th>
-                <th>座位</th>
-                <th>状态</th>
-                <th>备注</th>
-            </tr>
+        <table class="table table-striped">
+            <thead>
+            <tr><th>日期</th><th>课程</th><th>打卡时间</th><th>状态</th><th>备注</th></tr>
             </thead>
             <tbody>
-            <tr th:each="record : ${records}">
-                <td th:text="${#temporals.format(record.checkInTime, 'yyyy-MM-dd')}">2024-01-01</td>
-                <td th:text="${record.courseName}">课程名称</td>
-                <td th:text="${#temporals.format(record.checkInTime, 'HH:mm:ss')}">08:00:00</td>
-                <td th:text="${record.seatRow != null ? record.seatRow + '排' + record.seatCol + '座' : '-'}">-</td>
+            <tr th:each="r : ${records}">
+                <td th:text="${#temporals.format(r.attendanceDate, 'yyyy-MM-dd')}">-</td>
+                <td th:text="${r.courseName}">-</td>
+                <td th:text="${r.checkInTime != null ? #temporals.format(r.checkInTime, 'HH:mm:ss') : '-'}">-</td>
                 <td>
                             <span th:class="'status-badge ' +
-                                (record.status == 'NORMAL' ? 'status-normal' :
-                                (record.status == 'LATE' ? 'status-late' :
-                                (record.status == 'EARLY' ? 'status-early' : 'status-absent')))"
-                                  th:text="${record.status == 'NORMAL' ? '正常' :
-                                (record.status == 'LATE' ? '迟到' :
-                                (record.status == 'EARLY' ? '早退' : '缺勤'))}">
+                                (r.status == 'NORMAL' ? 'status-normal' :
+                                (r.status == 'LATE' ? 'status-late' :
+                                (r.status == 'LEAVE' ? 'status-leave' : 'status-absent')))"
+                                  th:text="${r.status == 'NORMAL' ? '正常' :
+                                (r.status == 'LATE' ? '迟到' :
+                                (r.status == 'LEAVE' ? '请假' : '旷课'))}">
                                 正常
                             </span>
                 </td>
-                <td th:text="${record.remark != null ? record.remark : '-'}">-</td>
+                <td th:text="${r.remark != null ? r.remark : '-'}">-</td>
             </tr>
-            <tr th:if="${records.isEmpty()}">
-                <td colspan="6" class="text-center text-muted">暂无考勤记录</td>
-            </tr>
+            <tr th:if="${records.isEmpty()}"><td colspan="5" class="text-center">暂无记录</td></tr>
             </tbody>
         </table>
     </div>
 
-    <!-- 分页导航 -->
-    <nav th:if="${totalPages > 0}">
-        <ul class="pagination justify-content-center">
-            <li th:class="${currentPage == 1} ? 'page-item disabled' : 'page-item'">
-                <a class="page-link" th:href="@{/attendance/list(page=${currentPage - 1}, size=${pageSize}, startDate=${startDate}, endDate=${endDate}, courseId=${courseId}, status=${status})}">上一页</a>
-            </li>
-            <li th:each="i : ${#numbers.sequence(1, totalPages)}" th:class="${i == currentPage} ? 'page-item active' : 'page-item'">
-                <a class="page-link" th:href="@{/attendance/list(page=${i}, size=${pageSize}, startDate=${startDate}, endDate=${endDate}, courseId=${courseId}, status=${status})}" th:text="${i}">1</a>
-            </li>
-            <li th:class="${currentPage == totalPages} ? 'page-item disabled' : 'page-item'">
-                <a class="page-link" th:href="@{/attendance/list(page=${currentPage + 1}, size=${pageSize}, startDate=${startDate}, endDate=${endDate}, courseId=${courseId}, status=${status})}">下一页</a>
-            </li>
-        </ul>
-    </nav>
-
-    <div class="text-muted text-center mt-3">
-        共 <span th:text="${totalElements}">0</span> 条记录，第 <span th:text="${currentPage}">1</span> / <span th:text="${totalPages}">1</span> 页
-    </div>
+    <a href="/attendance/checkIn" class="btn btn-primary mt-3">返回打卡</a>
 </div>
-
-<script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

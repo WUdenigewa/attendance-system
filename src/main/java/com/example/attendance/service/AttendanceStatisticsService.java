@@ -16,8 +16,6 @@ public class AttendanceStatisticsService {
 
     /**
      * 统计学生总考勤次数
-     * @param studentId 学生学号
-     * @return 总次数
      */
     public long countByStudentId(String studentId) {
         if (studentId == null || studentId.isEmpty()) {
@@ -28,9 +26,6 @@ public class AttendanceStatisticsService {
 
     /**
      * 统计学生某状态的考勤次数
-     * @param studentId 学生学号
-     * @param status 状态（NORMAL正常/LATE迟到/ABSENT缺勤）
-     * @return 次数
      */
     public long countByStudentIdAndStatus(String studentId, String status) {
         if (studentId == null || studentId.isEmpty()) {
@@ -41,10 +36,6 @@ public class AttendanceStatisticsService {
 
     /**
      * 按日期范围统计考勤次数
-     * @param studentId 学生学号
-     * @param startDate 开始日期
-     * @param endDate 结束日期
-     * @return 次数
      */
     public long countByStudentIdAndDateRange(String studentId, LocalDate startDate, LocalDate endDate) {
         if (studentId == null || studentId.isEmpty() || startDate == null || endDate == null) {
@@ -56,36 +47,30 @@ public class AttendanceStatisticsService {
     }
 
     /**
-     * 获取学生完整统计信息
-     * @param studentId 学生学号
-     * @return 统计结果
+     * 获取学生完整统计信息（包含请假）
      */
     public StatisticsDTO getStudentStatistics(String studentId) {
         if (studentId == null || studentId.isEmpty()) {
-            return new StatisticsDTO(0, 0, 0, 0);
+            return new StatisticsDTO(0, 0, 0, 0, 0);
         }
 
         long totalCount = attendanceRepository.countByStudentId(studentId);
         long normalCount = attendanceRepository.countByStudentIdAndStatus(studentId, "NORMAL");
         long lateCount = attendanceRepository.countByStudentIdAndStatus(studentId, "LATE");
+        long leaveCount = attendanceRepository.countByStudentIdAndStatus(studentId, "LEAVE");
         long absentCount = attendanceRepository.countByStudentIdAndStatus(studentId, "ABSENT");
 
-        return new StatisticsDTO(totalCount, normalCount, lateCount, absentCount);
+        return new StatisticsDTO(totalCount, normalCount, lateCount, leaveCount, absentCount);
     }
 
     /**
      * 按周统计出勤率
-     * @param studentId 学生学号
-     * @param year 年份
-     * @param week 周数（1-52）
-     * @return 统计结果
      */
     public StatisticsDTO getWeeklyStatistics(String studentId, int year, int week) {
         if (studentId == null || studentId.isEmpty()) {
-            return new StatisticsDTO(0, 0, 0, 0);
+            return new StatisticsDTO(0, 0, 0, 0, 0);
         }
 
-        // 获取该周的开始日期（周一）和结束日期（周日）
         LocalDate startDate = LocalDate.of(year, 1, 1)
                 .with(DayOfWeek.MONDAY)
                 .plusWeeks(week - 1);
@@ -105,14 +90,10 @@ public class AttendanceStatisticsService {
 
     /**
      * 按月统计出勤率
-     * @param studentId 学生学号
-     * @param year 年份
-     * @param month 月份（1-12）
-     * @return 统计结果
      */
     public StatisticsDTO getMonthlyStatistics(String studentId, int year, int month) {
         if (studentId == null || studentId.isEmpty()) {
-            return new StatisticsDTO(0, 0, 0, 0);
+            return new StatisticsDTO(0, 0, 0, 0, 0);
         }
 
         LocalDate startDate = LocalDate.of(year, month, 1);
@@ -132,8 +113,6 @@ public class AttendanceStatisticsService {
 
     /**
      * 获取本周统计
-     * @param studentId 学生学号
-     * @return 统计结果
      */
     public StatisticsDTO getCurrentWeekStatistics(String studentId) {
         LocalDate now = LocalDate.now();
@@ -154,8 +133,6 @@ public class AttendanceStatisticsService {
 
     /**
      * 获取本月统计
-     * @param studentId 学生学号
-     * @return 统计结果
      */
     public StatisticsDTO getCurrentMonthStatistics(String studentId) {
         LocalDate now = LocalDate.now();

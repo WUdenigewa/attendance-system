@@ -2,9 +2,11 @@ package com.example.attendance.controller;
 
 import com.example.attendance.entity.Attendance;
 import com.example.attendance.entity.Course;
+import com.example.attendance.entity.StatisticsDTO;
 import com.example.attendance.entity.User;
 import com.example.attendance.repository.AttendanceRepository;
 import com.example.attendance.repository.CourseRepository;
+import com.example.attendance.service.AttendanceStatisticsService;
 import com.example.attendance.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,10 +39,24 @@ public class AttendanceWebController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private AttendanceStatisticsService statisticsService;
+
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         return userService.getUserByUsername(username);
+    }
+
+    private String getStatusText(String status) {
+        if (status == null) return "未知";
+        switch (status) {
+            case "NORMAL": return "正常";
+            case "LATE": return "迟到";
+            case "LEAVE": return "请假";
+            case "ABSENT": return "旷课";
+            default: return status;
+        }
     }
 
     @GetMapping("/checkIn")
@@ -59,6 +75,7 @@ public class AttendanceWebController {
                           @RequestParam(required = false) Integer seatRow,
                           @RequestParam(required = false) Integer seatCol,
                           @RequestParam(required = false) String remark,
+                          @RequestParam(defaultValue = "NORMAL") String status,
                           Model model) {
 
         User currentUser = getCurrentUser();
@@ -100,24 +117,32 @@ public class AttendanceWebController {
         attendance.setSeatCol(seatCol);
         attendance.setRemark(remark);
 
-        LocalTime now = LocalTime.now();
-        LocalTime classStartTime = course.getClassStartTime();
-
-        if (classStartTime == null) {
+        // 判断打卡状态
+        if ("LEAVE".equals(status)) {
+            attendance.setStatus("LEAVE");
+        } else if ("NORMAL".equals(status)) {
             attendance.setStatus("NORMAL");
-        } else if (now.isAfter(classStartTime.plusMinutes(15))) {
+        } else if ("LATE".equals(status)) {
             attendance.setStatus("LATE");
         } else {
-            attendance.setStatus("NORMAL");
+            // 自动判断：18:45前正常，18:45-20:10迟到，20:10后旷课
+            LocalTime now = LocalTime.now();
+            LocalTime normalDeadline = LocalTime.of(18, 45);  // 18:45
+            LocalTime lateDeadline = LocalTime.of(20, 10);   // 20:10
+
+            if (now.isBefore(normalDeadline)) {
+                attendance.setStatus("NORMAL");
+            } else if (now.isBefore(lateDeadline)) {
+                attendance.setStatus("LATE");
+            } else {
+                attendance.setStatus("ABSENT");
+            }
         }
 
         attendance.setCreateTime(LocalDateTime.now());
-
         attendanceRepository.save(attendance);
 
-        String statusText = "LATE".equals(attendance.getStatus()) ? "迟到" : "正常";
-        model.addAttribute("successMsg", "打卡成功！状态：" + statusText);
-
+        model.addAttribute("successMsg", "打卡成功！状态：" + getStatusText(attendance.getStatus()));
         return checkInPage(model);
     }
 
@@ -198,5 +223,17 @@ public class AttendanceWebController {
         model.addAttribute("pageSize", size);
 
         return "attendance-list";
+    }
+
+    @GetMapping("/statistics")
+    public String statistics(Model model) {
+        User currentUser = getCurrentUser();
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        StatisticsDTO statistics = statisticsService.getStudentStatistics(currentUser.getStudentId());
+        model.addAttribute("statistics", statistics);
+        return "attendance-statistics";
     }
 }

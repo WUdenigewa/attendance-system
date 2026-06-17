@@ -4,185 +4,35 @@
     <meta charset="UTF-8">
     <title>考勤统计</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}"/>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .container { max-width: 1000px; margin-top: 30px; }
-        .stat-card { text-align: center; padding: 20px; border-radius: 10px; color: white; }
-        .stat-card h2 { font-size: 2.5rem; margin-bottom: 10px; }
-        .stat-card p { margin-bottom: 0; opacity: 0.9; }
-        .bg-total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .bg-normal { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
-        .bg-late { background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); }
-        .bg-absent { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
-        .rate-circle { width: 150px; height: 150px; margin: 0 auto; }
-        .filter-box { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-        .btn-quick { margin-right: 10px; margin-bottom: 10px; }
-        .chart-container { max-width: 400px; margin: 0 auto; }
-    </style>
 </head>
 <body>
-<div class="container">
-    <h2 class="mb-4">📈 考勤统计分析</h2>
+<div class="container mt-4">
+    <h2>📊 我的考勤统计</h2>
 
-    <!-- 统计卡片 -->
-    <div class="row mb-4">
+    <div class="row mt-4">
         <div class="col-md-3">
-            <div class="stat-card bg-total">
-                <h2 th:text="${statistics.totalCount}">0</h2>
-                <p>总考勤次数</p>
-            </div>
+            <div class="card text-white bg-primary"><div class="card-body"><h3 th:text="${statistics.totalCount}">0</h3><p>总考勤次数</p></div></div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card bg-normal">
-                <h2 th:text="${statistics.normalCount}">0</h2>
-                <p>✅ 正常</p>
-            </div>
+            <div class="card text-white bg-success"><div class="card-body"><h3 th:text="${statistics.normalCount}">0</h3><p>正常</p></div></div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card bg-late">
-                <h2 th:text="${statistics.lateCount}">0</h2>
-                <p>⚠️ 迟到</p>
-            </div>
+            <div class="card text-white bg-warning"><div class="card-body"><h3 th:text="${statistics.lateCount}">0</h3><p>迟到</p></div></div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card bg-absent">
-                <h2 th:text="${statistics.absentCount}">0</h2>
-                <p>❌ 缺勤</p>
-            </div>
+            <div class="card text-white bg-info"><div class="card-body"><h3 th:text="${statistics.leaveCount}">0</h3><p>请假</p></div></div>
         </div>
     </div>
 
-    <!-- 出勤率卡片 -->
-    <div class="card mb-4">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0">📊 出勤率</h5>
-        </div>
+    <div class="card mt-4">
+        <div class="card-header">出勤率</div>
         <div class="card-body text-center">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <div class="rate-circle">
-                        <canvas id="rateChart" width="150" height="150"></canvas>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <h1 th:text="${#numbers.formatDecimal(statistics.attendanceRate, 1, 2)} + '%'">0%</h1>
-                    <div class="progress mt-3">
-                        <div class="progress-bar bg-success" th:style="'width: ' + ${statistics.attendanceRate} + '%;'"></div>
-                    </div>
-                    <p class="text-muted mt-3">
-                        共 <span th:text="${statistics.totalCount}">0</span> 次考勤，
-                        正常 <span th:text="${statistics.normalCount}">0</span> 次
-                    </p>
-                </div>
-            </div>
+            <h1 th:text="${statistics.attendanceRate} + '%'">0%</h1>
+            <div class="progress"><div class="progress-bar bg-success" th:style="'width:' + ${statistics.attendanceRate} + '%'"></div></div>
         </div>
     </div>
 
-    <!-- 日期范围筛选 -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">🔍 按日期范围统计</h5>
-        </div>
-        <div class="card-body">
-            <form th:action="@{/attendance/statistics/range}" method="get" class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">开始日期：</label>
-                    <input type="date" class="form-control" name="startDate" th:value="${startDate}"/>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">结束日期：</label>
-                    <input type="date" class="form-control" name="endDate" th:value="${endDate}"/>
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">🔍 查询统计</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 快捷统计 -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">⚡ 快捷统计</h5>
-        </div>
-        <div class="card-body">
-            <a th:href="@{/attendance/statistics/week}" class="btn btn-outline-primary btn-quick">📅 本周</a>
-            <a th:href="@{/attendance/statistics/month}" class="btn btn-outline-primary btn-quick">📆 本月</a>
-            <a th:href="@{/attendance/statistics/all}" class="btn btn-outline-secondary btn-quick">📊 全部</a>
-        </div>
-    </div>
-
-    <!-- 考勤分布图 -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">🥧 考勤分布图</h5>
-        </div>
-        <div class="card-body">
-            <div class="chart-container">
-                <canvas id="attendanceChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- 快捷链接 -->
-    <div class="text-center mt-3">
-        <a th:href="@{/attendance/checkIn}" class="btn btn-sm btn-outline-primary">✅ 考勤打卡</a>
-        <a th:href="@{/attendance/list}" class="btn btn-sm btn-outline-secondary">📋 考勤记录</a>
-        <a th:href="@{/attendance/import}" class="btn btn-sm btn-outline-success">📤 批量导入</a>
-    </div>
+    <a href="/attendance/checkIn" class="btn btn-primary mt-3">返回打卡</a>
 </div>
-
-<script>
-    // 出勤率环形图
-    const rateCtx = document.getElementById('rateChart').getContext('2d');
-    const attendanceRate = [[${statistics.attendanceRate}]];
-    const absentRate = 100 - attendanceRate;
-
-    new Chart(rateCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['出勤', '缺勤'],
-            datasets: [{
-                data: [attendanceRate, absentRate],
-                backgroundColor: ['#28a745', '#dc3545'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            cutout: '60%',
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
-    });
-
-    // 考勤分布柱状图
-    const chartCtx = document.getElementById('attendanceChart').getContext('2d');
-    new Chart(chartCtx, {
-        type: 'bar',
-        data: {
-            labels: ['正常', '迟到', '缺勤'],
-            datasets: [{
-                label: '次数',
-                data: [
-                    [[${statistics.normalCount}]],
-                    [[${statistics.lateCount}]],
-                    [[${statistics.absentCount}]]
-                ],
-                backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
-                borderRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { position: 'top' }
-            }
-        }
-    });
-</script>
-
-<script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>
